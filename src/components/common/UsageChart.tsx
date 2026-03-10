@@ -1,6 +1,6 @@
 import { BarChart3 } from 'lucide-react';
-import { calculateTimeAwareMRLStatus } from '../lib/mrlCalculator';
-import { DrugUsageLog } from '../types';
+import { calculateTimeAwareMRLStatus } from '../../lib/calculations/mrlCalculator';
+import { DrugUsageLog } from '../../types/index';
 
 interface UsageChartProps {
   logs: DrugUsageLog[];

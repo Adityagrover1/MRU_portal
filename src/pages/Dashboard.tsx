@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { calculateTimeAwareMRLStatus } from '../lib/mrlCalculator';
-import { DrugUsageLog } from '../types';
+import { calculateTimeAwareMRLStatus } from '../lib/calculations/mrlCalculator';
+import { DrugUsageLog } from '../types/index';
 import { LogOut, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
-import { DrugUsageForm } from './DrugUsageForm';
-import { MRLStatusTable } from './MRLStatusTable';
-import { UsageChart } from './UsageChart';
-import { RegulatoryResources } from './RegulatoryResources';
-import { AnimalManager } from './AnimalManager';
+import { DrugUsageForm } from '../components/forms/DrugUsageForm';
+import { MRLStatusTable } from '../components/tables/MRLStatusTable';
+import { UsageChart } from '../components/common/UsageChart';
+import { RegulatoryResources } from '../components/common/RegulatoryResources';
+import { AnimalManager } from '../components/AnimalManager';
 
 export function Dashboard() {
   const { user, signOut } = useAuth();

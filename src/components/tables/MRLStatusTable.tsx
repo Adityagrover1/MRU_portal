@@ -1,6 +1,6 @@
 import { AlertCircle, CheckCircle, XCircle, Pencil, Trash2 } from 'lucide-react';
-import { calculateTimeAwareMRLStatus } from '../lib/mrlCalculator';
-import { DrugUsageLog } from '../types';
+import { calculateTimeAwareMRLStatus } from '../../lib/calculations/mrlCalculator';
+import { DrugUsageLog } from '../../types/index';
 
 interface MRLStatusTableProps {
   logs: DrugUsageLog[];

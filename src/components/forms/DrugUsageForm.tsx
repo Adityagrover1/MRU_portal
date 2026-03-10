@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
-import { calculateTimeAwareMRLStatus, FSSAI_STANDARDS_MRLS } from '../lib/mrlCalculator';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
+import { calculateTimeAwareMRLStatus, FSSAI_STANDARDS_MRLS } from '../../lib/calculations/mrlCalculator';
 import { Save } from 'lucide-react';
 
 interface Drug {
