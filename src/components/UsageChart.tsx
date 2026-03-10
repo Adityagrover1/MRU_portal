@@ -1,11 +1,6 @@
 import { BarChart3 } from 'lucide-react';
-
-interface DrugUsageLog {
-  id: string;
-  mrl_status: string;
-  drugs: { name: string };
-  administration_date: string;
-}
+import { calculateTimeAwareMRLStatus } from '../lib/mrlCalculator';
+import { DrugUsageLog } from '../types';
 
 interface UsageChartProps {
   logs: DrugUsageLog[];
@@ -25,11 +20,22 @@ export function UsageChart({ logs }: UsageChartProps) {
 
   const maxCount = Math.max(...chartData.map(d => d.count), 1);
 
-  const statusCounts = {
-    safe: logs.filter(l => l.mrl_status === 'safe').length,
-    warning: logs.filter(l => l.mrl_status === 'warning').length,
-    exceeded: logs.filter(l => l.mrl_status === 'exceeded').length,
-  };
+  const statusCounts = logs.reduce(
+    (acc, log) => {
+      const liveStatus = calculateTimeAwareMRLStatus(
+        log.drugs.name,
+        log.animal_types.name,
+        log.dose_amount,
+        log.dose_unit,
+        log.administration_date,
+        new Date(),
+        'FSSAI'
+      );
+      acc[liveStatus.status] = (acc[liveStatus.status] || 0) + 1;
+      return acc;
+    },
+    { safe: 0, warning: 0, exceeded: 0 } as Record<string, number>
+  );
 
   const totalStatus = statusCounts.safe + statusCounts.warning + statusCounts.exceeded || 1;
 

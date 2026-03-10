@@ -1,16 +1,6 @@
 import { AlertCircle, CheckCircle, XCircle, Pencil, Trash2 } from 'lucide-react';
 import { calculateTimeAwareMRLStatus } from '../lib/mrlCalculator';
-
-interface DrugUsageLog {
-  id: string;
-  dose_amount: number;
-  dose_unit: string;
-  animal_count: number;
-  administration_date: string;
-  mrl_status: string;
-  drugs: { name: string };
-  animal_types: { name: string };
-}
+import { DrugUsageLog } from '../types';
 
 interface MRLStatusTableProps {
   logs: DrugUsageLog[];
@@ -27,7 +17,9 @@ export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTab
       log.animal_types.name,
       log.dose_amount,
       log.dose_unit,
-      log.administration_date
+      log.administration_date,
+      new Date(),
+      'FSSAI'  // Use FSSAI standards
     );
   };
 
@@ -102,6 +94,9 @@ export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTab
                   Animal Type
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Animal ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Dose
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -112,6 +107,9 @@ export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTab
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Days Until Safe
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Notes
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   MRL Status
@@ -136,6 +134,11 @@ export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTab
                       {log.animal_types.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {log.animals
+                        ? <span className="font-mono">{log.animals.tag_id}{log.animals.name ? ` — ${log.animals.name}` : ''}</span>
+                        : <span className="text-gray-300 italic">—</span>}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {log.dose_amount} {log.dose_unit}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -148,6 +151,11 @@ export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTab
                       {liveStatus.isSafeForSlaughter
                         ? <span className="text-green-600 font-medium">Safe</span>
                         : `${liveStatus.daysUntilSafe} ${liveStatus.daysUntilSafe === 1 ? 'day' : 'days'}`}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
+                      {log.notes
+                        ? <span title={log.notes} className="block truncate max-w-[200px]">{log.notes}</span>
+                        : <span className="text-gray-300 italic">—</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">

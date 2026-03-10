@@ -18,6 +18,32 @@ export type Database = {
           created_at?: string;
         };
       };
+      animals: {
+        Row: {
+          id: string;
+          user_id: string;
+          animal_type_id: string;
+          tag_id: string;
+          name: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          animal_type_id: string;
+          tag_id: string;
+          name?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          animal_type_id?: string;
+          tag_id?: string;
+          name?: string;
+          created_at?: string;
+        };
+      };
       drugs: {
         Row: {
           id: string;
@@ -73,6 +99,7 @@ export type Database = {
           user_id: string;
           drug_id: string;
           animal_type_id: string;
+          animal_id: string | null;
           dose_amount: number;
           dose_unit: string;
           animal_count: number;
@@ -86,6 +113,7 @@ export type Database = {
           user_id: string;
           drug_id: string;
           animal_type_id: string;
+          animal_id?: string | null;
           dose_amount: number;
           dose_unit?: string;
           animal_count?: number;
@@ -99,6 +127,7 @@ export type Database = {
           user_id?: string;
           drug_id?: string;
           animal_type_id?: string;
+          animal_id?: string | null;
           dose_amount?: number;
           dose_unit?: string;
           animal_count?: number;

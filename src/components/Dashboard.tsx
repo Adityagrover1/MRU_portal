@@ -2,30 +2,19 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { calculateTimeAwareMRLStatus } from '../lib/mrlCalculator';
+import { DrugUsageLog } from '../types';
 import { LogOut, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
 import { DrugUsageForm } from './DrugUsageForm';
 import { MRLStatusTable } from './MRLStatusTable';
 import { UsageChart } from './UsageChart';
-
-interface DrugUsageLog {
-  id: string;
-  drug_id: string;
-  animal_type_id: string;
-  dose_amount: number;
-  dose_unit: string;
-  animal_count: number;
-  administration_date: string;
-  notes: string;
-  mrl_status: string;
-  created_at: string;
-  drugs: { name: string };
-  animal_types: { name: string };
-}
+import { RegulatoryResources } from './RegulatoryResources';
+import { AnimalManager } from './AnimalManager';
 
 export function Dashboard() {
   const { user, signOut } = useAuth();
   const [logs, setLogs] = useState<DrugUsageLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [editingLog, setEditingLog] = useState<DrugUsageLog | null>(null);
   const [stats, setStats] = useState({
     total: 0,
@@ -43,7 +32,8 @@ export function Dashboard() {
         .select(`
           *,
           drugs (name),
-          animal_types (name)
+          animal_types (name),
+          animals (tag_id, name)
         `)
         .eq('user_id', user.id)
         .order('administration_date', { ascending: false });
@@ -60,7 +50,9 @@ export function Dashboard() {
             log.animal_types.name,
             log.dose_amount,
             log.dose_unit,
-            log.administration_date
+            log.administration_date,
+            new Date(),
+            'FSSAI'  // Use FSSAI standards for MRL calculations
           );
           return result.status;
         });
@@ -74,6 +66,7 @@ export function Dashboard() {
       }
     } catch (error) {
       console.error('Error fetching logs:', error);
+      setFetchError('Failed to load drug usage logs. Please refresh the page.');
     } finally {
       setLoading(false);
     }
@@ -107,7 +100,7 @@ export function Dashboard() {
 
       if (error) throw error;
 
-      fetchLogs();  // Refresh the list
+      await fetchLogs();  // Refresh the list
     } catch (error) {
       console.error('Error deleting log:', error);
       alert('Failed to delete log. Please try again.');
@@ -202,13 +195,25 @@ export function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <DrugUsageForm
-            onLogAdded={handleLogAdded}
-            editingLog={editingLog}
-            onCancelEdit={handleCancelEdit}
-          />
+          <AnimalManager />
+          <div className="grid grid-cols-1 gap-6">
+            <DrugUsageForm
+              onLogAdded={handleLogAdded}
+              editingLog={editingLog}
+              onCancelEdit={handleCancelEdit}
+            />
+          </div>
+        </div>
+
+        <div className="mb-8">
           <UsageChart logs={logs} />
         </div>
+
+        {fetchError && (
+          <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
+            <p className="text-sm text-red-700">{fetchError}</p>
+          </div>
+        )}
 
         <MRLStatusTable
           logs={logs}
@@ -216,6 +221,8 @@ export function Dashboard() {
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
+
+        <RegulatoryResources />
       </main>
     </div>
   );

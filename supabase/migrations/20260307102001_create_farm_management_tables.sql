@@ -142,14 +142,14 @@ CREATE POLICY "Users can delete own drug usage logs"
 INSERT INTO animal_types (name) VALUES
   ('Cattle'),
   ('Poultry'),
-  ('Swine'),
+  ('Pig'),
   ('Sheep'),
   ('Goat')
 ON CONFLICT (name) DO NOTHING;
 
 -- Insert sample drugs
 INSERT INTO drugs (name, description) VALUES
-  ('Penicillin', 'Beta-lactam antibiotic used for bacterial infections'),
+  ('Penicillin G', 'Beta-lactam antibiotic used for bacterial infections'),
   ('Tetracycline', 'Broad-spectrum antibiotic'),
   ('Sulfonamides', 'Synthetic antimicrobial agents'),
   ('Enrofloxacin', 'Fluoroquinolone antibiotic'),
@@ -162,15 +162,15 @@ SELECT
   d.id,
   a.id,
   CASE 
-    WHEN d.name = 'Penicillin' THEN 4
+    WHEN d.name = 'Penicillin G' THEN 4
     WHEN d.name = 'Tetracycline' THEN 100
     WHEN d.name = 'Sulfonamides' THEN 100
     WHEN d.name = 'Enrofloxacin' THEN 100
     WHEN d.name = 'Tylosin' THEN 100
   END,
   'μg/kg',
-  CASE 
-    WHEN d.name = 'Penicillin' THEN 4
+  CASE
+    WHEN d.name = 'Penicillin G' THEN 4
     WHEN d.name = 'Tetracycline' THEN 21
     WHEN d.name = 'Sulfonamides' THEN 10
     WHEN d.name = 'Enrofloxacin' THEN 14

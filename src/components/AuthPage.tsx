@@ -8,12 +8,22 @@ export function AuthPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
+
+    if (!isLogin) {
+      if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+        setError('Password must contain at least one uppercase letter and one number.');
+        setLoading(false);
+        return;
+      }
+    }
 
     try {
       const { error } = isLogin
@@ -22,6 +32,8 @@ export function AuthPage() {
 
       if (error) {
         setError(error.message);
+      } else if (!isLogin) {
+        setSuccessMessage('Account created! Please check your email to confirm your address before signing in.');
       }
     } catch (err) {
       setError('An unexpected error occurred');
@@ -72,11 +84,22 @@ export function AuthPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="••••••••"
             />
+            {!isLogin && (
+              <p className="mt-1 text-xs text-gray-500">
+                Min. 6 characters, must include an uppercase letter and a number.
+              </p>
+            )}
           </div>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
               {error}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+              {successMessage}
             </div>
           )}
 
@@ -94,6 +117,7 @@ export function AuthPage() {
             onClick={() => {
               setIsLogin(!isLogin);
               setError('');
+              setSuccessMessage('');
             }}
             className="text-green-600 hover:text-green-700 text-sm font-medium"
           >

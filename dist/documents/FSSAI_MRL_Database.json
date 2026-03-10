@@ -1,0 +1,469 @@
+{
+  "metadata": {
+    "source": "FSSAI Compendium of Contaminants and Regulations",
+    "version": "VI",
+    "date": "2022-01-28",
+    "url": "https://fssai.gov.in/upload/uploadfiles/files/Compendium_Contaminants_Regulations_28_01_2022.pdf"
+  },
+  "antibiotics": {
+    "seafood_products": [
+      {
+        "drug_name": "Tetracycline",
+        "mrl": 0.1,
+        "unit": "mg/kg",
+        "food_category": "Fish and Fishery Products",
+        "tissues": [
+          "whole"
+        ]
+      },
+      {
+        "drug_name": "Oxytetracycline",
+        "mrl": 0.1,
+        "unit": "mg/kg",
+        "food_category": "Fish and Fishery Products",
+        "tissues": [
+          "whole"
+        ]
+      },
+      {
+        "drug_name": "Trimethoprim",
+        "mrl": 0.05,
+        "unit": "mg/kg",
+        "food_category": "Fish and Fishery Products",
+        "tissues": [
+          "whole"
+        ]
+      },
+      {
+        "drug_name": "Oxolinic acid",
+        "mrl": 0.3,
+        "unit": "mg/kg",
+        "food_category": "Fish and Fishery Products",
+        "tissues": [
+          "whole"
+        ]
+      }
+    ],
+    "honey": [
+      {
+        "drug_name": "Chloramphenicol",
+        "mrl": 0.3,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey",
+        "notes": "LOQ"
+      },
+      {
+        "drug_name": "Nitrofurans",
+        "mrl": 0.5,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey",
+        "notes": "metabolites, collectively"
+      },
+      {
+        "drug_name": "Sulphonamides",
+        "mrl": 5.0,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey"
+      },
+      {
+        "drug_name": "Streptomycin",
+        "mrl": 5.0,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey"
+      },
+      {
+        "drug_name": "Tetracycline",
+        "mrl": 5.0,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey"
+      },
+      {
+        "drug_name": "Oxytetracycline",
+        "mrl": 5.0,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey"
+      },
+      {
+        "drug_name": "Chlortetracycline",
+        "mrl": 5.0,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey"
+      },
+      {
+        "drug_name": "Ampicillin",
+        "mrl": 5.0,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey"
+      },
+      {
+        "drug_name": "Enrofloxacin",
+        "mrl": 5.0,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey"
+      },
+      {
+        "drug_name": "Ciprofloxacin",
+        "mrl": 5.0,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey"
+      },
+      {
+        "drug_name": "Erythromycin",
+        "mrl": 5.0,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey"
+      },
+      {
+        "drug_name": "Tylosin",
+        "mrl": 5.0,
+        "unit": "\u03bcg/kg",
+        "food_category": "Honey"
+      }
+    ],
+    "meat_and_animal": [
+      {
+        "drug_name": "Ampicillin",
+        "animal_types": [
+          "All"
+        ],
+        "tissues": [
+          {
+            "tissue": "All edible tissues",
+            "mrl": 0.01,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Fats",
+            "mrl": 0.01,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Milk",
+            "mrl": 0.01,
+            "unit": "mg/kg"
+          }
+        ]
+      },
+      {
+        "drug_name": "Streptomycin/Dihydrostreptomycin",
+        "animal_types": [
+          "Cattle",
+          "Chicken",
+          "Pig",
+          "Sheep"
+        ],
+        "tissues": [
+          {
+            "tissue": "Muscle",
+            "mrl": 0.6,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Liver",
+            "mrl": 0.6,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Kidney",
+            "mrl": 1.0,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Fat",
+            "mrl": 0.6,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Milk",
+            "mrl": 0.02,
+            "unit": "mg/kg",
+            "note": "Cattle: 0.02, Sheep: 0.2"
+          }
+        ]
+      },
+      {
+        "drug_name": "Tetracyclines",
+        "animal_types": [
+          "Cattle",
+          "Pig",
+          "Poultry",
+          "Sheep",
+          "Giant prawn"
+        ],
+        "tissues": [
+          {
+            "tissue": "Muscle",
+            "mrl": 0.2,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Liver",
+            "mrl": 0.6,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Kidney",
+            "mrl": 1.2,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Milk",
+            "mrl": 0.1,
+            "unit": "mg/kg",
+            "note": "Cattle/Sheep only"
+          },
+          {
+            "tissue": "Eggs",
+            "mrl": 0.4,
+            "unit": "mg/kg",
+            "note": "Poultry only"
+          }
+        ]
+      },
+      {
+        "drug_name": "Erythromycin",
+        "animal_types": [
+          "Chicken",
+          "Turkey"
+        ],
+        "tissues": [
+          {
+            "tissue": "Muscle",
+            "mrl": 0.1,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Liver",
+            "mrl": 0.1,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Kidney",
+            "mrl": 0.1,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Fat",
+            "mrl": 0.1,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Eggs",
+            "mrl": 0.05,
+            "unit": "mg/kg",
+            "note": "Chicken only"
+          }
+        ]
+      },
+      {
+        "drug_name": "Tilmicosin",
+        "animal_types": [
+          "Cattle",
+          "Pig",
+          "Sheep",
+          "Chicken",
+          "Turkey"
+        ],
+        "tissues": [
+          {
+            "tissue": "Muscle",
+            "mrl": 0.1,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Liver",
+            "mrl": 1.0,
+            "unit": "mg/kg",
+            "note": "varies by animal"
+          },
+          {
+            "tissue": "Kidney",
+            "mrl": 0.3,
+            "unit": "mg/kg",
+            "note": "Cattle/Sheep 0.3, Chicken 0.6"
+          },
+          {
+            "tissue": "Fat",
+            "mrl": 0.1,
+            "unit": "mg/kg"
+          }
+        ]
+      },
+      {
+        "drug_name": "Neomycin",
+        "animal_types": [
+          "Cattle",
+          "Chicken",
+          "Duck",
+          "Goat",
+          "Pig",
+          "Sheep",
+          "Turkey"
+        ],
+        "tissues": [
+          {
+            "tissue": "Muscle",
+            "mrl": 0.5,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Liver",
+            "mrl": 0.5,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Kidney",
+            "mrl": 10.0,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Fat",
+            "mrl": 0.5,
+            "unit": "mg/kg"
+          },
+          {
+            "tissue": "Milk",
+            "mrl": 1.5,
+            "unit": "mg/kg",
+            "note": "Cattle only"
+          },
+          {
+            "tissue": "Eggs",
+            "mrl": 0.5,
+            "unit": "mg/kg",
+            "note": "Chicken only"
+          }
+        ]
+      }
+    ]
+  },
+  "prohibited_substances": [
+    {
+      "name": "Nitrofurans (Furaltadone, Furazolidone, Nitrofurato\u00ecn, Nitrofurazone)",
+      "emrl": "0.001 mg/kg"
+    },
+    {
+      "name": "Chloramphenicol",
+      "emrl": "0.0003 mg/kg (0.3 \u03bcg/kg)"
+    },
+    {
+      "name": "Sulphamethoxazole",
+      "emrl": "0.001 mg/kg"
+    },
+    {
+      "name": "Diethylstilbestrol",
+      "emrl": "0.001 mg/kg"
+    },
+    {
+      "name": "Clenbuterol",
+      "emrl": "0.001 mg/kg"
+    },
+    {
+      "name": "Metronidazole",
+      "emrl": "0.001 mg/kg"
+    },
+    {
+      "name": "Malachite Green",
+      "emrl": "0.001 mg/kg"
+    },
+    {
+      "name": "Crystal Violet",
+      "emrl": "0.001 mg/kg"
+    }
+  ],
+  "heavy_metals": {
+    "lead": [
+      {
+        "food": "Foods not specified",
+        "limit": 2.5,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Fruits and Vegetables",
+        "limit": 0.1,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Cereals and Grains",
+        "limit": 0.2,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Fish and Fishery",
+        "limit": 0.3,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Sugar and Syrups",
+        "limit": 5.0,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Spices (dry matter)",
+        "limit": 10.0,
+        "unit": "mg/kg"
+      }
+    ],
+    "cadmium": [
+      {
+        "food": "Vegetables (most)",
+        "limit": 0.05,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Cereals (except wheat)",
+        "limit": 0.1,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Wheat",
+        "limit": 0.2,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Rice",
+        "limit": 0.4,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Fish",
+        "limit": 0.3,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Molluscs",
+        "limit": 2.0,
+        "unit": "mg/kg"
+      }
+    ],
+    "mercury": [
+      {
+        "food": "Non-predatory Fish",
+        "limit": 0.5,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Predatory Fish",
+        "limit": 1.0,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Vegetables",
+        "limit": 1.0,
+        "unit": "mg/kg"
+      },
+      {
+        "food": "Foods not specified",
+        "limit": 1.0,
+        "unit": "mg/kg"
+      }
+    ],
+    "methylmercury": [
+      {
+        "food": "All foods",
+        "limit": 0.25,
+        "unit": "mg/kg"
+      }
+    ]
+  }
+}
