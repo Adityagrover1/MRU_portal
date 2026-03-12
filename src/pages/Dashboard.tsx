@@ -9,6 +9,7 @@ import { MRLStatusTable } from '../components/tables/MRLStatusTable';
 import { UsageChart } from '../components/common/UsageChart';
 import { RegulatoryResources } from '../components/common/RegulatoryResources';
 import { AnimalManager } from '../components/AnimalManager';
+import { ChatWidget } from '../components/chat/ChatWidget';
 
 export function Dashboard() {
   const { user, signOut } = useAuth();
@@ -224,6 +225,8 @@ export function Dashboard() {
 
         <RegulatoryResources />
       </main>
+
+      <ChatWidget />
     </div>
   );
 }
