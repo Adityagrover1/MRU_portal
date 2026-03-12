@@ -300,25 +300,8 @@ Refresh logs and stats
 - Integration with veterinary systems
 - Predictive MRL analysis
 - Compliance alert notifications
-
-## Contributing
-
-When modifying the codebase:
-1. Follow existing code structure
-2. Maintain type safety with TypeScript
-3. Use Tailwind CSS for styling
-4. Add appropriate error handling
-5. Test before committing
-
-## License
-
-This project is part of the EDI farm management system.
-
-## Support
-
-For issues, questions, or feature requests, please contact the development team.
+- 
 
 ---
 
-**Last Updated**: March 2026
-**Version**: 1.0.0
+**Last Updated**: 13 March 2026
