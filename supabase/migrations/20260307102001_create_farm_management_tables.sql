@@ -151,30 +151,30 @@ ON CONFLICT (name) DO NOTHING;
 INSERT INTO drugs (name, description) VALUES
   ('Penicillin G', 'Beta-lactam antibiotic used for bacterial infections'),
   ('Tetracycline', 'Broad-spectrum antibiotic'),
-  ('Sulfonamides', 'Synthetic antimicrobial agents'),
+  ('Ampicillin', 'Beta-lactam antibiotic active against gram-positive and gram-negative bacteria'),
   ('Enrofloxacin', 'Fluoroquinolone antibiotic'),
-  ('Tylosin', 'Macrolide antibiotic')
+  ('Streptomycin', 'Aminoglycoside antibiotic used against gram-negative bacteria')
 ON CONFLICT (name) DO NOTHING;
 
 -- Insert sample MRL limits
 INSERT INTO mrl_limits (drug_id, animal_type_id, limit_value, unit, withdrawal_period_days)
-SELECT 
+SELECT
   d.id,
   a.id,
-  CASE 
+  CASE
     WHEN d.name = 'Penicillin G' THEN 4
     WHEN d.name = 'Tetracycline' THEN 100
-    WHEN d.name = 'Sulfonamides' THEN 100
+    WHEN d.name = 'Ampicillin' THEN 10
     WHEN d.name = 'Enrofloxacin' THEN 100
-    WHEN d.name = 'Tylosin' THEN 100
+    WHEN d.name = 'Streptomycin' THEN 600
   END,
   'μg/kg',
   CASE
-    WHEN d.name = 'Penicillin G' THEN 4
-    WHEN d.name = 'Tetracycline' THEN 21
-    WHEN d.name = 'Sulfonamides' THEN 10
+    WHEN d.name = 'Penicillin G' THEN 5
+    WHEN d.name = 'Tetracycline' THEN 28
+    WHEN d.name = 'Ampicillin' THEN 7
     WHEN d.name = 'Enrofloxacin' THEN 14
-    WHEN d.name = 'Tylosin' THEN 14
+    WHEN d.name = 'Streptomycin' THEN 14
   END
 FROM drugs d
 CROSS JOIN animal_types a

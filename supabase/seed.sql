@@ -13,8 +13,12 @@ ON CONFLICT DO NOTHING;
 -- Insert drugs
 INSERT INTO drugs (name, description) VALUES
   ('Amoxicillin', 'β-lactam antibiotic used for bacterial infections'),
+  ('Ampicillin', 'Beta-lactam antibiotic active against gram-positive and gram-negative bacteria'),
   ('Oxytetracycline', 'Broad-spectrum tetracycline antibiotic'),
   ('Penicillin G', 'Natural penicillin antibiotic'),
+  ('Streptomycin', 'Aminoglycoside antibiotic used against gram-negative bacteria'),
+  ('Erythromycin', 'Macrolide antibiotic effective against gram-positive organisms'),
+  ('Neomycin', 'Aminoglycoside antibiotic used for enteric infections'),
   ('Sulfadiazine', 'Sulfonamide antimicrobial agent'),
   ('Chlortetracycline', 'Tetracycline antibiotic'),
   ('Gentamicin', 'Aminoglycoside antibiotic'),
@@ -145,4 +149,33 @@ SELECT d.id, a.id, 100, 'μg/kg', 10
 FROM drugs d, animal_types a
 WHERE d.name = 'Tetracycline' AND a.name = 'Poultry'
 ON CONFLICT DO NOTHING;
+
+-- Insert MRL limits for Ampicillin (FSSAI: 0.01 mg/kg = 10 μg/kg for all animal types)
+INSERT INTO mrl_limits (drug_id, animal_type_id, limit_value, unit, withdrawal_period_days)
+SELECT d.id, a.id, 10, 'μg/kg', 7
+FROM drugs d, animal_types a
+WHERE d.name = 'Ampicillin' AND a.name IN ('Cattle', 'Pig', 'Poultry', 'Sheep', 'Goat')
+ON CONFLICT DO NOTHING;
+
+-- Insert MRL limits for Streptomycin (FSSAI: 0.6 mg/kg = 600 μg/kg for all animal types)
+INSERT INTO mrl_limits (drug_id, animal_type_id, limit_value, unit, withdrawal_period_days)
+SELECT d.id, a.id, 600, 'μg/kg', 14
+FROM drugs d, animal_types a
+WHERE d.name = 'Streptomycin' AND a.name IN ('Cattle', 'Pig', 'Poultry', 'Sheep', 'Goat')
+ON CONFLICT DO NOTHING;
+
+-- Insert MRL limits for Erythromycin (FSSAI: 0.1 mg/kg = 100 μg/kg for all animal types)
+INSERT INTO mrl_limits (drug_id, animal_type_id, limit_value, unit, withdrawal_period_days)
+SELECT d.id, a.id, 100, 'μg/kg', 14
+FROM drugs d, animal_types a
+WHERE d.name = 'Erythromycin' AND a.name IN ('Cattle', 'Pig', 'Poultry', 'Sheep', 'Goat')
+ON CONFLICT DO NOTHING;
+
+-- Insert MRL limits for Neomycin (FSSAI: 0.5 mg/kg = 500 μg/kg for all animal types)
+INSERT INTO mrl_limits (drug_id, animal_type_id, limit_value, unit, withdrawal_period_days)
+SELECT d.id, a.id, 500, 'μg/kg', 14
+FROM drugs d, animal_types a
+WHERE d.name = 'Neomycin' AND a.name IN ('Cattle', 'Pig', 'Poultry', 'Sheep', 'Goat')
+ON CONFLICT DO NOTHING;
+
 
