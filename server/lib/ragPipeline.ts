@@ -127,10 +127,17 @@ function getLiveStatus(log: DrugLog): string {
 // Prompt builder
 // ---------------------------------------------------------------------------
 
+// Formatted withdrawal period table for inclusion in the system prompt
+const WITHDRAWAL_TABLE = Object.entries(WITHDRAWAL_PERIODS)
+  .map(([drug, periods]) =>
+    `  ${drug}: Cattle ${periods.Cattle}d, Pig ${periods.Pig}d, Poultry ${periods.Poultry}d, Sheep ${periods.Sheep}d, Goat ${periods.Goat}d`
+  )
+  .join('\n');
+
 function buildSystemPrompt(chunks: DocumentChunk[], logs: DrugLog[]): string {
   const regulatoryContext = chunks.length > 0
     ? chunks.map(c => c.content).join('\n\n')
-    : 'No specific regulatory data matched for this query.';
+    : 'No additional regulatory data matched for this query.';
 
   let personalContext = 'No drug administration records found for this user.';
   if (logs.length > 0) {
@@ -152,12 +159,16 @@ Your role is to help farmers understand:
 - Whether specific animals in the farmer's records currently have active drug residues
 
 Rules:
-- Base regulatory answers on the FSSAI context provided below
-- Base personal-data answers on the farmer's drug records provided below
-- Be concise and direct — farmers need quick, practical answers
+- ONLY answer questions about veterinary drugs, FSSAI regulations, MRLs, withdrawal periods, animal health, and the farmer's own drug records. For anything outside this scope, respond with exactly: "I can only help with FSSAI drug compliance and farm animal health questions."
+- Answer directly and confidently from the data provided below — never say you lack FSSAI data
+- Base regulatory answers on the FSSAI Withdrawal Periods table and the FSSAI Regulatory Context below
+- Base personal-data answers on the farmer's drug records below
+- Keep every response to 2–3 sentences maximum; be direct and practical
 - If a substance is prohibited, clearly state it is BANNED under FSSAI
-- If you are unsure, say so rather than guessing
 - Use plain English; avoid overly technical jargon
+
+=== FSSAI Withdrawal Periods (days) ===
+${WITHDRAWAL_TABLE}
 
 === FSSAI Regulatory Context ===
 ${regulatoryContext}
@@ -204,7 +215,7 @@ export async function generateReply(
     completion = await openai.chat.completions.create({
       model: 'gpt-5-mini-2025-08-07',
       messages,
-      max_completion_tokens: 4096,
+      max_completion_tokens: 1000,
     });
   } catch (err) {
     throw new Error(`Chat completion failed: ${err instanceof Error ? err.message : String(err)}`);
@@ -215,8 +226,8 @@ export async function generateReply(
   console.log('[RAG] content:', JSON.stringify(choice?.message?.content));
 
   // Some newer models return content as null with refusal set, or return empty string
-  const content = choice?.message?.content;
-  if (!content) {
+  const content = choice?.message?.content ?? '';
+  if (content === '') {
     const refusal = (choice?.message as any)?.refusal;
     if (refusal) throw new Error(`Model refused: ${refusal}`);
     throw new Error(`Model returned empty content (finish_reason: ${choice?.finish_reason})`);
