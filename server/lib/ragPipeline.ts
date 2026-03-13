@@ -176,7 +176,12 @@ export async function generateReply(
   userJwt: string,
 ): Promise<string> {
   // 1. Embed the user's question
-  const queryEmbedding = await embedText(message);
+  let queryEmbedding: number[];
+  try {
+    queryEmbedding = await embedText(message);
+  } catch (err) {
+    throw new Error(`Embedding failed: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   // 2. Parallel: similarity search + fetch user's drug logs
   const [chunks, logs] = await Promise.all([
@@ -187,19 +192,35 @@ export async function generateReply(
   // 3. Build the system prompt with regulatory + personal context
   const systemPrompt = buildSystemPrompt(chunks, logs);
 
-  // 4. Call gpt-4o-mini with full conversation history
+  // 4. Call the chat model with full conversation history
   const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
     { role: 'system', content: systemPrompt },
     ...conversationHistory.map(m => ({ role: m.role, content: m.content })),
     { role: 'user', content: message },
   ];
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages,
-    max_tokens: 600,
-    temperature: 0.2, // Low temperature for factual regulatory answers
-  });
+  let completion;
+  try {
+    completion = await openai.chat.completions.create({
+      model: 'gpt-5-mini-2025-08-07',
+      messages,
+      max_completion_tokens: 4096,
+    });
+  } catch (err) {
+    throw new Error(`Chat completion failed: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
-  return completion.choices[0].message.content ?? 'Sorry, I could not generate a response.';
+  const choice = completion.choices[0];
+  console.log('[RAG] finish_reason:', choice?.finish_reason);
+  console.log('[RAG] content:', JSON.stringify(choice?.message?.content));
+
+  // Some newer models return content as null with refusal set, or return empty string
+  const content = choice?.message?.content;
+  if (!content) {
+    const refusal = (choice?.message as any)?.refusal;
+    if (refusal) throw new Error(`Model refused: ${refusal}`);
+    throw new Error(`Model returned empty content (finish_reason: ${choice?.finish_reason})`);
+  }
+
+  return content;
 }

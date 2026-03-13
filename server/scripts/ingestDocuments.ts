@@ -10,7 +10,6 @@
  * Run with:  npm run ingest
  */
 
-import 'dotenv/config';
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';

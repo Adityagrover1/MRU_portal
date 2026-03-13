@@ -30,8 +30,9 @@ router.post('/chat', async (req: Request, res: Response): Promise<void> => {
     );
     res.json({ reply });
   } catch (err) {
-    console.error('Chat error:', err);
-    res.status(500).json({ error: 'Failed to generate response. Please try again.' });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Chat error:', message);
+    res.status(500).json({ error: message });
   }
 });
 
