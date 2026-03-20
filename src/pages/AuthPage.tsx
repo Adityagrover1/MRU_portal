@@ -35,7 +35,7 @@ export function AuthPage() {
       } else if (!isLogin) {
         setSuccessMessage('Account created! Please check your email to confirm your address before signing in.');
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
     } finally {
       setLoading(false);

@@ -14,7 +14,7 @@ interface Animal {
   tag_id: string;
   name: string;
   created_at: string;
-  animal_types: { name: string };
+  animal_types: { name: string } | { name: string }[] | null;
 }
 
 const EMPTY_FORM = { animal_type_id: '', tag_id: '', name: '' };
@@ -238,7 +238,11 @@ export function AnimalManager() {
                 <tr key={animal.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-2 font-mono font-medium text-gray-900">{animal.tag_id}</td>
                   <td className="px-4 py-2 text-gray-600">{animal.name || <span className="text-gray-400 italic">—</span>}</td>
-                  <td className="px-4 py-2 text-gray-600">{animal.animal_types.name}</td>
+                  <td className="px-4 py-2 text-gray-600">
+                    {Array.isArray(animal.animal_types)
+                      ? (animal.animal_types[0]?.name || 'Unknown')
+                      : (animal.animal_types?.name || 'Unknown')}
+                  </td>
                   <td className="px-4 py-2">
                     <div className="flex gap-2">
                       <button

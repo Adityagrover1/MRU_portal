@@ -9,7 +9,6 @@ import { MRLStatusTable } from '../components/tables/MRLStatusTable';
 import { UsageChart } from '../components/common/UsageChart';
 import { RegulatoryResources } from '../components/common/RegulatoryResources';
 import { AnimalManager } from '../components/AnimalManager';
-import { ChatWidget } from '../components/chat/ChatWidget';
 
 export function Dashboard() {
   const { user, signOut } = useAuth();
@@ -17,6 +16,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [editingLog, setEditingLog] = useState<DrugUsageLog | null>(null);
+  const [backendStatus, setBackendStatus] = useState('Checking backend...');
   const [stats, setStats] = useState({
     total: 0,
     safe: 0,
@@ -77,6 +77,22 @@ export function Dashboard() {
     fetchLogs();
   }, [user]);
 
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        const response = await fetch('/api/health');
+        if (!response.ok) {
+          throw new Error('Backend request failed');
+        }
+        setBackendStatus('Backend connected');
+      } catch {
+        setBackendStatus('Backend not reachable');
+      }
+    };
+
+    checkBackend();
+  }, []);
+
   const handleLogAdded = () => {
     setEditingLog(null);  // Clear edit mode after adding/updating
     fetchLogs();
@@ -123,6 +139,7 @@ export function Dashboard() {
               <h1 className="text-2xl font-bold text-gray-900">Farm MRL Portal</h1>
             </div>
             <div className="flex items-center gap-4">
+              <span className="text-xs text-gray-500">{backendStatus}</span>
               <span className="text-sm text-gray-600">{user?.email}</span>
               <button
                 onClick={signOut}
@@ -225,8 +242,6 @@ export function Dashboard() {
 
         <RegulatoryResources />
       </main>
-
-      <ChatWidget />
     </div>
   );
 }
