@@ -17,6 +17,7 @@ export type Database = {
           name?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       animals: {
         Row: {
@@ -43,6 +44,15 @@ export type Database = {
           name?: string;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'animals_animal_type_id_fkey';
+            columns: ['animal_type_id'];
+            isOneToOne: false;
+            referencedRelation: 'animal_types';
+            referencedColumns: ['id'];
+          }
+        ];
       };
       drugs: {
         Row: {
@@ -63,6 +73,7 @@ export type Database = {
           description?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       mrl_limits: {
         Row: {
@@ -92,6 +103,22 @@ export type Database = {
           withdrawal_period_days?: number;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'mrl_limits_animal_type_id_fkey';
+            columns: ['animal_type_id'];
+            isOneToOne: false;
+            referencedRelation: 'animal_types';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'mrl_limits_drug_id_fkey';
+            columns: ['drug_id'];
+            isOneToOne: false;
+            referencedRelation: 'drugs';
+            referencedColumns: ['id'];
+          }
+        ];
       };
       drug_usage_logs: {
         Row: {
@@ -136,7 +163,42 @@ export type Database = {
           mrl_status?: string;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'drug_usage_logs_animal_id_fkey';
+            columns: ['animal_id'];
+            isOneToOne: false;
+            referencedRelation: 'animals';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'drug_usage_logs_animal_type_id_fkey';
+            columns: ['animal_type_id'];
+            isOneToOne: false;
+            referencedRelation: 'animal_types';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'drug_usage_logs_drug_id_fkey';
+            columns: ['drug_id'];
+            isOneToOne: false;
+            referencedRelation: 'drugs';
+            referencedColumns: ['id'];
+          }
+        ];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 };
