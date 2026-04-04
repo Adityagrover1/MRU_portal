@@ -109,6 +109,9 @@ export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTab
                   Days Until Safe
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  MRL Limit
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Notes
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -151,6 +154,9 @@ export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTab
                       {liveStatus.isSafeForSlaughter
                         ? <span className="text-green-600 font-medium">Safe</span>
                         : `${liveStatus.daysUntilSafe} ${liveStatus.daysUntilSafe === 1 ? 'day' : 'days'}`}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {liveStatus.limitValue} mg/kg
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
                       {log.notes

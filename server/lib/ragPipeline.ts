@@ -213,9 +213,9 @@ export async function generateReply(
   let completion;
   try {
     completion = await openai.chat.completions.create({
-      model: 'gpt-5-mini-2025-08-07',
+      model: 'gpt-5-nano-2025-08-07',
       messages,
-      max_completion_tokens: 1000,
+      max_completion_tokens: 4000,
     });
   } catch (err) {
     throw new Error(`Chat completion failed: ${err instanceof Error ? err.message : String(err)}`);
