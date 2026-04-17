@@ -1,6 +1,14 @@
 import { supabase } from './supabase';
 
 type RequestBody = Record<string, unknown> | undefined;
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+
+const toApiUrl = (path: string) => {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  return `${API_BASE_URL}${path}`;
+};
 
 export async function apiRequest<T>(path: string, method = 'GET', body?: RequestBody): Promise<T> {
   const { data } = await supabase.auth.getSession();
@@ -24,7 +32,7 @@ export async function apiRequest<T>(path: string, method = 'GET', body?: Request
     init.body = JSON.stringify(body);
   }
 
-  const response = await fetch(path, init);
+  const response = await fetch(toApiUrl(path), init);
 
   if (response.status === 204) {
     return undefined as T;
