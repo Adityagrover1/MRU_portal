@@ -1,10 +1,14 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import { calculateTimeAwareMRLStatus } from '../src/lib/calculations/mrlCalculator';
 
+dotenv.config({ path: '.env.local' });
+
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 
@@ -126,7 +130,7 @@ const enrichLogWithLiveMRL = (log: LogWithRelations) => {
   };
 };
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: CORS_ORIGIN }));
 app.use(express.json());
 
 app.get('/api/health', (_req, res) => {
@@ -466,5 +470,5 @@ app.delete('/api/drug-usage-logs/:id', requireAuth, async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

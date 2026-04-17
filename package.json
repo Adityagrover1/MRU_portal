@@ -7,6 +7,7 @@
     "dev": "concurrently \"vite\" \"tsx watch --env-file .env.local server/index.ts\"",
     "dev:client": "vite",
     "dev:server": "tsx watch --env-file .env.local server/index.ts",
+    "start": "tsx server/index.ts",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
