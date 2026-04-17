@@ -1,5 +1,4 @@
 import { AlertCircle, CheckCircle, XCircle, Pencil, Trash2 } from 'lucide-react';
-import { calculateTimeAwareMRLStatus } from '../../lib/calculations/mrlCalculator';
 import { DrugUsageLog } from '../../types/index';
 
 interface MRLStatusTableProps {
@@ -10,19 +9,6 @@ interface MRLStatusTableProps {
 }
 
 export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTableProps) {
-  // Helper function to calculate live status based on current time
-  const getLiveStatus = (log: DrugUsageLog) => {
-    return calculateTimeAwareMRLStatus(
-      log.drugs.name,
-      log.animal_types.name,
-      log.dose_amount,
-      log.dose_unit,
-      log.administration_date,
-      new Date(),
-      'FSSAI'  // Use FSSAI standards
-    );
-  };
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'safe':
@@ -121,7 +107,12 @@ export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTab
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {logs.map((log) => {
-                const liveStatus = getLiveStatus(log);
+                const liveStatus = log.live_mrl;
+                const liveStatusValue = liveStatus?.status || log.mrl_status;
+                const daysElapsed = liveStatus?.daysElapsed ?? 0;
+                const daysUntilSafe = liveStatus?.daysUntilSafe ?? 0;
+                const isSafeForSlaughter = liveStatus?.isSafeForSlaughter ?? liveStatusValue === 'safe';
+
                 return (
                   <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -145,12 +136,12 @@ export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTab
                       {log.animal_count}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {liveStatus.daysElapsed} {liveStatus.daysElapsed === 1 ? 'day' : 'days'}
+                      {daysElapsed} {daysElapsed === 1 ? 'day' : 'days'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {liveStatus.isSafeForSlaughter
+                      {isSafeForSlaughter
                         ? <span className="text-green-600 font-medium">Safe</span>
-                        : `${liveStatus.daysUntilSafe} ${liveStatus.daysUntilSafe === 1 ? 'day' : 'days'}`}
+                        : `${daysUntilSafe} ${daysUntilSafe === 1 ? 'day' : 'days'}`}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
                       {log.notes
@@ -159,9 +150,9 @@ export function MRLStatusTable({ logs, loading, onEdit, onDelete }: MRLStatusTab
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        {getStatusIcon(liveStatus.status)}
-                        <span className={getStatusBadge(liveStatus.status)}>
-                          {liveStatus.status}
+                        {getStatusIcon(liveStatusValue)}
+                        <span className={getStatusBadge(liveStatusValue)}>
+                          {liveStatusValue}
                         </span>
                       </div>
                     </td>

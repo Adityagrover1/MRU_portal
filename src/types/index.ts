@@ -1,3 +1,14 @@
+export interface LiveMRLStatus {
+  status: string;
+  percentageOfLimit: number;
+  currentResiduePercentage: number;
+  daysElapsed: number;
+  daysUntilSafe: number;
+  limitValue: number;
+  withdrawalPeriod: number;
+  isSafeForSlaughter: boolean;
+}
+
 export interface DrugUsageLog {
   id: string;
   drug_id: string;
@@ -13,4 +24,5 @@ export interface DrugUsageLog {
   drugs: { name: string };
   animal_types: { name: string };
   animals?: { tag_id: string; name: string } | null;
+  live_mrl?: LiveMRLStatus;
 }

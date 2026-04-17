@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
-import { calculateTimeAwareMRLStatus } from '../lib/calculations/mrlCalculator';
+import { apiRequest } from '../lib/api';
 import { DrugUsageLog } from '../types/index';
-import { LogOut, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
+import { AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
 import { DrugUsageForm } from '../components/forms/DrugUsageForm';
 import { MRLStatusTable } from '../components/tables/MRLStatusTable';
 import { UsageChart } from '../components/common/UsageChart';
 import { RegulatoryResources } from '../components/common/RegulatoryResources';
 import { AnimalManager } from '../components/AnimalManager';
+import { Header } from '../components/common/Header';
 
 export function Dashboard() {
   const { user, signOut } = useAuth();
@@ -27,43 +27,18 @@ export function Dashboard() {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('drug_usage_logs')
-        .select(`
-          *,
-          drugs (name),
-          animal_types (name),
-          animals (tag_id, name)
-        `)
-        .eq('user_id', user.id)
-        .order('administration_date', { ascending: false });
+      const data = await apiRequest<DrugUsageLog[]>('/api/drug-usage-logs');
 
-      if (error) throw error;
+      setLogs(data);
 
-      if (data) {
-        setLogs(data as DrugUsageLog[]);
+      const currentStatuses = data.map(log => log.live_mrl?.status || log.mrl_status);
 
-        // Recalculate current MRL status for each log based on time elapsed
-        const currentStatuses = data.map(log => {
-          const result = calculateTimeAwareMRLStatus(
-            log.drugs.name,
-            log.animal_types.name,
-            log.dose_amount,
-            log.dose_unit,
-            log.administration_date,
-            new Date(),
-            'FSSAI'  // Use FSSAI standards for MRL calculations
-          );
-          return result.status;
-        });
-
-        const total = data.length;
+      const total = data.length;
         const safe = currentStatuses.filter(s => s === 'safe').length;
         const warning = currentStatuses.filter(s => s === 'warning').length;
         const exceeded = currentStatuses.filter(s => s === 'exceeded').length;
 
         setStats({ total, safe, warning, exceeded });
-      }
     } catch (error) {
       console.error('Error fetching logs:', error);
       setFetchError('Failed to load drug usage logs. Please refresh the page.');
@@ -93,12 +68,7 @@ export function Dashboard() {
     }
 
     try {
-      const { error } = await supabase
-        .from('drug_usage_logs')
-        .delete()
-        .eq('id', logId);
-
-      if (error) throw error;
+      await apiRequest(`/api/drug-usage-logs/${logId}`, 'DELETE');
 
       await fetchLogs();  // Refresh the list
     } catch (error) {
@@ -115,25 +85,10 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Farm MRL Portal</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{user?.email}</span>
-              <button
-                onClick={signOut}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Header
+        email={user?.email}
+        onSignOut={signOut}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {alertCount > 0 && (

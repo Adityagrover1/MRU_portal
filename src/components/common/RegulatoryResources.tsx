@@ -1,4 +1,4 @@
-import { FileText, Download, ExternalLink } from 'lucide-react';
+import { FileText, ExternalLink } from 'lucide-react';
 
 export function RegulatoryResources() {
   return (
@@ -34,69 +34,6 @@ export function RegulatoryResources() {
             </div>
           </div>
         </a>
-
-        {/* FSSAI Summary */}
-        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 opacity-60 cursor-not-allowed">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-1">
-                FSSAI MRL Summary
-              </h3>
-              <p className="text-sm text-gray-600 mb-2">
-                Quick reference summary of FSSAI MRL standards with 100+ antibiotics, prohibited substances, and heavy metal limits.
-              </p>
-              <p className="text-xs text-gray-500 mb-3">
-                Portal Reference • Text Format
-              </p>
-              <div className="flex items-center text-gray-400 text-sm font-medium">
-                <Download className="w-4 h-4 mr-1" />
-                Coming soon
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* FSSAI Comprehensive Data */}
-        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 opacity-60 cursor-not-allowed">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-1">
-                FSSAI Comprehensive MRL Data
-              </h3>
-              <p className="text-sm text-gray-600 mb-2">
-                Detailed reference manual with antibiotic limits by animal type and tissue, prohibited substances, and contaminants.
-              </p>
-              <p className="text-xs text-gray-500 mb-3">
-                Portal Reference • Detailed Text Format
-              </p>
-              <div className="flex items-center text-gray-400 text-sm font-medium">
-                <Download className="w-4 h-4 mr-1" />
-                Coming soon
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* FSSAI JSON Database */}
-        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 opacity-60 cursor-not-allowed">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-1">
-                FSSAI MRL Database (JSON)
-              </h3>
-              <p className="text-sm text-gray-600 mb-2">
-                Machine-readable JSON format database suitable for integration with MRL calculation systems.
-              </p>
-              <p className="text-xs text-gray-500 mb-3">
-                Portal Reference • JSON Format
-              </p>
-              <div className="flex items-center text-gray-400 text-sm font-medium">
-                <Download className="w-4 h-4 mr-1" />
-                Coming soon
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* EU Regulation */}
         <a

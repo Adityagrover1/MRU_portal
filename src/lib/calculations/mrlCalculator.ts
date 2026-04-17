@@ -796,13 +796,6 @@ export const INDUSTRY_STANDARD_MRLS: Record<string, MRLData> = {
   },
 };
 
-interface MRLStatusResult {
-  status: 'safe' | 'warning' | 'exceeded';
-  percentageOfLimit: number;
-  limitValue: number;
-  withdrawalPeriod: number;
-}
-
 export interface TimeAwareMRLStatusResult {
   status: 'safe' | 'warning' | 'exceeded';
   percentageOfLimit: number;
@@ -812,209 +805,6 @@ export interface TimeAwareMRLStatusResult {
   limitValue: number;
   withdrawalPeriod: number;
   isSafeForSlaughter: boolean;
-}
-
-/**
- * Calculates MRL status based on dose vs regulatory standard limits
- * @param drugName - Name of the drug
- * @param animalType - Type of animal
- * @param doseAmount - Amount of dose administered
- * @param doseUnit - Unit of dose (mg, ml, g)
- * @param standard - Regulatory standard to use (EU_FDA or FSSAI)
- * @returns MRL status information
- */
-export function calculateMRLStatus(
-  drugName: string,
-  animalType: string,
-  doseAmount: number,
-  doseUnit: string,
-  standard: RegulatoryStandard = 'EU_FDA'
-): MRLStatusResult {
-  if (standard === 'FSSAI') {
-    return calculateFSSAIMRLStatus(drugName, animalType, doseAmount, doseUnit);
-  }
-  return calculateEUFDAMRLStatus(drugName, animalType, doseAmount, doseUnit);
-}
-
-/**
- * Calculates EU/FDA MRL status based on dose vs industry standard limits
- * @param drugName - Name of the drug
- * @param animalType - Type of animal
- * @param doseAmount - Amount of dose administered
- * @param doseUnit - Unit of dose (mg, ml, g)
- * @returns MRL status information
- */
-function calculateEUFDAMRLStatus(
-  drugName: string,
-  animalType: string,
-  doseAmount: number,
-  doseUnit: string
-): MRLStatusResult {
-  const mrlData = INDUSTRY_STANDARD_MRLS[drugName];
-
-  if (!mrlData) {
-    // Drug not in database — cannot verify safety, treat as exceeded
-    return {
-      status: 'exceeded',
-      percentageOfLimit: 0,
-      limitValue: 0,
-      withdrawalPeriod: 0,
-    };
-  }
-
-  const animalData = mrlData.animalTypes[animalType];
-
-  if (!animalData) {
-    // Animal type not defined for this drug — cannot verify safety, treat as exceeded
-    return {
-      status: 'exceeded',
-      percentageOfLimit: 0,
-      limitValue: 0,
-      withdrawalPeriod: 0,
-    };
-  }
-
-  // Convert dose to μg/kg for comparison
-  // Assuming dose is per kg of animal body weight
-  let doseInMicrogramsPerKg = doseAmount;
-
-  // Convert from mg or g to μg
-  if (doseUnit === 'mg') {
-    doseInMicrogramsPerKg = doseAmount * 1000; // 1mg = 1000μg
-  } else if (doseUnit === 'g') {
-    doseInMicrogramsPerKg = doseAmount * 1000000; // 1g = 1,000,000μg
-  }
-  // If it's already in μg, no conversion needed
-  // If it's ml, we keep as is (assuming 1:1 ratio for liquid formulations)
-
-  const percentageOfLimit = (doseInMicrogramsPerKg / animalData.limitValue) * 100;
-
-  let status: 'safe' | 'warning' | 'exceeded';
-
-  if (percentageOfLimit <= 50) {
-    status = 'safe';
-  } else if (percentageOfLimit <= 100) {
-    status = 'warning';
-  } else {
-    status = 'exceeded';
-  }
-
-  return {
-    status,
-    percentageOfLimit: Math.round(percentageOfLimit * 100) / 100,
-    limitValue: animalData.limitValue,
-    withdrawalPeriod: animalData.withdrawalPeriod,
-  };
-}
-
-/**
- * Calculates FSSAI MRL status based on dose vs FSSAI standards
- * Uses muscle tissue as default for comparison
- * @param drugName - Name of the drug
- * @param animalType - Type of animal
- * @param doseAmount - Amount of dose administered
- * @param doseUnit - Unit of dose (mg, ml, g)
- * @returns MRL status information
- */
-function calculateFSSAIMRLStatus(
-  drugName: string,
-  animalType: string,
-  doseAmount: number,
-  doseUnit: string
-): MRLStatusResult {
-  const mrlData = FSSAI_STANDARDS_MRLS[drugName];
-
-  if (!mrlData) {
-    // Drug not found in FSSAI database
-    console.warn(`Warning: Drug "${drugName}" not found in FSSAI MRL standards. Using default limits.`);
-    return {
-      status: 'warning',  // Changed from 'safe' to 'warning' for safety
-      percentageOfLimit: 0,
-      limitValue: 0,
-      withdrawalPeriod: 0,
-    };
-  }
-
-  const animalData = mrlData.animalTypes[animalType];
-
-  if (!animalData) {
-    // Animal type not found for this drug
-    console.warn(`Warning: Animal type "${animalType}" not supported for drug "${drugName}" in FSSAI standards. Please check your input.`);
-    return {
-      status: 'warning',  // Changed from 'safe' to 'warning' for safety
-      percentageOfLimit: 0,
-      limitValue: 0,
-      withdrawalPeriod: 0,
-    };
-  }
-
-  // Use muscle tissue as default, or the first available tissue
-  const tissueLimit = animalData.tissues['muscle'] ||
-                      Object.values(animalData.tissues)[0];
-
-  if (!tissueLimit) {
-    console.warn(`Warning: No tissue data found for "${drugName}" in "${animalType}".`);
-    return {
-      status: 'warning',  // Changed from 'safe' to 'warning' for safety
-      percentageOfLimit: 0,
-      limitValue: 0,
-      withdrawalPeriod: 0,
-    };
-  }
-
-  // Convert dose to mg/kg for comparison
-  let doseInMg = doseAmount;
-
-  // Convert to mg
-  if (doseUnit === 'mg') {
-    doseInMg = doseAmount; // Already in mg
-  } else if (doseUnit === 'g') {
-    doseInMg = doseAmount * 1000; // 1g = 1000mg
-  } else if (doseUnit === 'μg') {
-    doseInMg = doseAmount / 1000; // 1000μg = 1mg
-  }
-  // If it's ml, we keep as is (assuming 1:1 ratio for liquid formulations)
-
-  const percentageOfLimit = (doseInMg / tissueLimit.limitValue) * 100;
-
-  let status: 'safe' | 'warning' | 'exceeded';
-
-  if (percentageOfLimit <= 50) {
-    status = 'safe';
-  } else if (percentageOfLimit <= 100) {
-    status = 'warning';
-  } else {
-    status = 'exceeded';
-  }
-
-  return {
-    status,
-    percentageOfLimit: Math.round(percentageOfLimit * 100) / 100,
-    limitValue: tissueLimit.limitValue,
-    withdrawalPeriod: animalData.withdrawalPeriod ?? 7, // Default 7 days if not specified
-  };
-}
-
-/**
- * Get MRL limit for a specific drug and animal type
- */
-export function getMRLLimit(drugName: string, animalType: string): number | null {
-  const mrlData = INDUSTRY_STANDARD_MRLS[drugName];
-  if (!mrlData) return null;
-
-  const animalData = mrlData.animalTypes[animalType];
-  return animalData?.limitValue ?? null;
-}
-
-/**
- * Get withdrawal period for a specific drug and animal type
- */
-export function getWithdrawalPeriod(drugName: string, animalType: string): number | null {
-  const mrlData = INDUSTRY_STANDARD_MRLS[drugName];
-  if (!mrlData) return null;
-
-  const animalData = mrlData.animalTypes[animalType];
-  return animalData?.withdrawalPeriod ?? null;
 }
 
 /**
@@ -1094,7 +884,7 @@ export function calculateTimeAwareMRLStatus(
 
   if (standard === 'FSSAI') {
     // FSSAI uses mg/kg
-    const fssaiData = animalData as any; // TypeScript workaround for union type
+    const fssaiData = animalData as FSSAIMRLData['animalTypes'][string];
     const tissueLimit = fssaiData.tissues?.['muscle'] || Object.values(fssaiData.tissues || {})[0];
     if (!tissueLimit) {
       // No tissue data — cannot verify safety, treat as exceeded
@@ -1121,7 +911,7 @@ export function calculateTimeAwareMRLStatus(
     }
   } else {
     // EU/FDA uses μg/kg
-    const eufdaData = animalData as any;
+    const eufdaData = animalData as MRLData['animalTypes'][string];
     limitValue = eufdaData.limitValue;
 
     if (doseUnit === 'mg') {
@@ -1142,9 +932,10 @@ export function calculateTimeAwareMRLStatus(
     daysElapsed = 0;
   }
 
-  const withdrawalPeriod = standard === 'FSSAI'
-    ? (animalData as any).withdrawalPeriod ?? 7
-    : (animalData as any).withdrawalPeriod ?? 7;
+  const withdrawalPeriod =
+    'withdrawalPeriod' in animalData && typeof animalData.withdrawalPeriod === 'number'
+      ? animalData.withdrawalPeriod
+      : 7;
 
   // Step 5: Calculate CURRENT residue percentage using linear depletion model
   let currentResiduePercentage: number;
