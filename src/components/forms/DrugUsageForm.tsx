@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
-import { calculateTimeAwareMRLStatus, FSSAI_STANDARDS_MRLS } from '../../lib/calculations/mrlCalculator';
+import { apiRequest } from '../../lib/api';
 import { Save } from 'lucide-react';
 
 interface Drug {
@@ -49,7 +48,6 @@ export function DrugUsageForm({ onLogAdded, editingLog = null, onCancelEdit }: D
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [refError, setRefError] = useState('');
-  const [unsupportedWarning, setUnsupportedWarning] = useState(false);
 
   const [formData, setFormData] = useState({
     drug_id: '',
@@ -63,6 +61,7 @@ export function DrugUsageForm({ onLogAdded, editingLog = null, onCancelEdit }: D
   });
 
   useEffect(() => {
+    if (!user) return;
     fetchReferenceData();
   }, [user]);
 
@@ -92,49 +91,23 @@ export function DrugUsageForm({ onLogAdded, editingLog = null, onCancelEdit }: D
         notes: '',
       });
     }
-    setUnsupportedWarning(false);
   }, [editingLog]);
 
   const fetchReferenceData = async () => {
-    if (!user) return;
-    const [drugsResult, animalTypesResult, animalsResult] = await Promise.all([
-      supabase.from('drugs').select('id, name').order('name'),
-      supabase.from('animal_types').select('id, name').order('name'),
-      supabase.from('animals').select('id, animal_type_id, tag_id, name').eq('user_id', user.id).order('tag_id'),
-    ]);
-
-    if (drugsResult.error || animalTypesResult.error || animalsResult.error) {
+    try {
+      const result = await apiRequest<{ drugs: Drug[]; animalTypes: AnimalType[]; animals: Animal[] }>('/api/reference-data');
+      setDrugs(result.drugs || []);
+      setAnimalTypes(result.animalTypes || []);
+      setAnimals(result.animals || []);
+    } catch {
       setRefError('Failed to load reference data. Please refresh the page.');
-      return;
     }
-
-    if (drugsResult.data) setDrugs(drugsResult.data);
-    if (animalTypesResult.data) setAnimalTypes(animalTypesResult.data);
-    if (animalsResult.data) setAnimals(animalsResult.data as Animal[]);
   };
 
   // Animals filtered to those matching the currently selected animal type
   const filteredAnimals = animals.filter(
     (a) => !formData.animal_type_id || a.animal_type_id === formData.animal_type_id
   );
-
-  const isValidDrugAnimalCombination = (drugName: string, animalName: string): boolean => {
-    if (!drugName || !animalName) return false;
-    const drugData = FSSAI_STANDARDS_MRLS[drugName];
-    return drugData !== undefined && drugData.animalTypes[animalName] !== undefined;
-  };
-
-  const handleDrugOrAnimalChange = (drugId: string, animalTypeId: string) => {
-    const drugName = drugs.find(d => d.id === drugId)?.name || '';
-    const animalTypeName = animalTypes.find(a => a.id === animalTypeId)?.name || '';
-
-    if (drugName && animalTypeName) {
-      const isValid = isValidDrugAnimalCombination(drugName, animalTypeName);
-      setUnsupportedWarning(!isValid);
-    } else {
-      setUnsupportedWarning(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,59 +118,22 @@ export function DrugUsageForm({ onLogAdded, editingLog = null, onCancelEdit }: D
     setError('');
 
     try {
-      // Find the drug name and animal type name for MRL calculation
-      const drugName = drugs.find(d => d.id === formData.drug_id)?.name || '';
-      const animalTypeName = animalTypes.find(a => a.id === formData.animal_type_id)?.name || '';
-
-      // Calculate MRL status based on FSSAI standards with time-aware logic
-      const mrlResult = calculateTimeAwareMRLStatus(
-        drugName,
-        animalTypeName,
-        parseFloat(formData.dose_amount),
-        formData.dose_unit,
-        formData.administration_date,  // Pass administration date for time-aware calculation
-        new Date(),
-        'FSSAI'  // Use FSSAI standards
-      );
-
       const animalId = formData.animal_id || null;
+      const payload = {
+        drug_id: formData.drug_id,
+        animal_type_id: formData.animal_type_id,
+        animal_id: animalId,
+        dose_amount: parseFloat(formData.dose_amount),
+        dose_unit: formData.dose_unit,
+        animal_count: parseInt(formData.animal_count),
+        administration_date: formData.administration_date,
+        notes: formData.notes,
+      };
 
       if (editingLog) {
-        // UPDATE mode - editing existing log
-        const { error } = await supabase
-          .from('drug_usage_logs')
-          .update({
-            drug_id: formData.drug_id,
-            animal_type_id: formData.animal_type_id,
-            animal_id: animalId,
-            dose_amount: parseFloat(formData.dose_amount),
-            dose_unit: formData.dose_unit,
-            animal_count: parseInt(formData.animal_count),
-            administration_date: formData.administration_date,
-            notes: formData.notes,
-            mrl_status: mrlResult.status,
-          })
-          .eq('id', editingLog.id);
-
-        if (error) throw error;
+        await apiRequest(`/api/drug-usage-logs/${editingLog.id}`, 'PATCH', payload);
       } else {
-        // INSERT mode - creating new log
-        const { error } = await supabase.from('drug_usage_logs').insert([
-          {
-            user_id: user.id,
-            drug_id: formData.drug_id,
-            animal_type_id: formData.animal_type_id,
-            animal_id: animalId,
-            dose_amount: parseFloat(formData.dose_amount),
-            dose_unit: formData.dose_unit,
-            animal_count: parseInt(formData.animal_count),
-            administration_date: formData.administration_date,
-            notes: formData.notes,
-            mrl_status: mrlResult.status,
-          },
-        ]);
-
-        if (error) throw error;
+        await apiRequest('/api/drug-usage-logs', 'POST', payload);
       }
 
       setSuccess(true);
@@ -217,7 +153,11 @@ export function DrugUsageForm({ onLogAdded, editingLog = null, onCancelEdit }: D
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
       console.error('Error adding log:', error);
-      setError('Failed to save. Please try again.');
+      if (error instanceof Error) {
+        setError(error.message || 'Failed to save. Please try again.');
+      } else {
+        setError('Failed to save. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -246,7 +186,6 @@ export function DrugUsageForm({ onLogAdded, editingLog = null, onCancelEdit }: D
             onChange={(e) => {
               const newDrugId = e.target.value;
               setFormData({ ...formData, drug_id: newDrugId });
-              handleDrugOrAnimalChange(newDrugId, formData.animal_type_id);
             }}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -270,7 +209,6 @@ export function DrugUsageForm({ onLogAdded, editingLog = null, onCancelEdit }: D
               const newAnimalTypeId = e.target.value;
               // Reset individual animal when type changes
               setFormData({ ...formData, animal_type_id: newAnimalTypeId, animal_id: '' });
-              handleDrugOrAnimalChange(formData.drug_id, newAnimalTypeId);
             }}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -313,15 +251,6 @@ export function DrugUsageForm({ onLogAdded, editingLog = null, onCancelEdit }: D
             </p>
           )}
         </div>
-
-        {unsupportedWarning && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex gap-2 text-sm">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-            <div>
-              <strong>Unsupported combination:</strong> This drug-animal type combination is not in the database. Dose will be marked as EXCEEDED for safety. Please verify before use.
-            </div>
-          </div>
-        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div>

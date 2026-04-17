@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, Tag, X, Save } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import { apiRequest } from '../lib/api';
 
 interface AnimalType {
   id: string;
@@ -31,25 +31,28 @@ export function AnimalManager() {
   const [fetchError, setFetchError] = useState('');
 
   useEffect(() => {
+    if (!user) return;
     fetchAnimalTypes();
     fetchAnimals();
   }, [user]);
 
   const fetchAnimalTypes = async () => {
-    const { data, error } = await supabase.from('animal_types').select('id, name').order('name');
-    if (error) { setFetchError('Failed to load animal types. Please refresh.'); return; }
-    if (data) setAnimalTypes(data);
+    try {
+      const data = await apiRequest<AnimalType[]>('/api/animal-types');
+      setAnimalTypes(data);
+    } catch {
+      setFetchError('Failed to load animal types. Please refresh.');
+    }
   };
 
   const fetchAnimals = async () => {
     if (!user) return;
-    const { data, error } = await supabase
-      .from('animals')
-      .select('id, animal_type_id, tag_id, name, created_at, animal_types(name)')
-      .eq('user_id', user.id)
-      .order('tag_id');
-    if (error) { setFetchError('Failed to load animals. Please refresh.'); return; }
-    if (data) setAnimals(data as Animal[]);
+    try {
+      const data = await apiRequest<Animal[]>('/api/animals');
+      setAnimals(data);
+    } catch {
+      setFetchError('Failed to load animals. Please refresh.');
+    }
   };
 
   const handleEdit = (animal: Animal) => {
@@ -74,39 +77,28 @@ export function AnimalManager() {
 
     try {
       if (editingId) {
-        const { error: err } = await supabase
-          .from('animals')
-          .update({
-            animal_type_id: formData.animal_type_id,
-            tag_id: formData.tag_id.trim(),
-            name: formData.name.trim(),
-          })
-          .eq('id', editingId);
-        if (err) throw err;
+        await apiRequest(`/api/animals/${editingId}`, 'PATCH', {
+          animal_type_id: formData.animal_type_id,
+          tag_id: formData.tag_id.trim(),
+          name: formData.name.trim(),
+        });
       } else {
-        const { error: err } = await supabase.from('animals').insert([
-          {
-            user_id: user.id,
-            animal_type_id: formData.animal_type_id,
-            tag_id: formData.tag_id.trim(),
-            name: formData.name.trim(),
-          },
-        ]);
-        if (err) throw err;
+        await apiRequest('/api/animals', 'POST', {
+          animal_type_id: formData.animal_type_id,
+          tag_id: formData.tag_id.trim(),
+          name: formData.name.trim(),
+        });
       }
 
       handleCancel();
       fetchAnimals();
     } catch (err: unknown) {
       console.error('Animal save error:', err);
-      if (err && typeof err === 'object' && 'code' in err) {
-        const dbErr = err as { code: string; message?: string };
-        if (dbErr.code === '23505') {
+      if (err instanceof Error) {
+        if (err.message.toLowerCase().includes('duplicate')) {
           setError('An animal with this Tag ID already exists.');
-        } else if (dbErr.code === '42P01') {
-          setError('Database table not found. Please apply the latest migration in your Supabase dashboard.');
         } else {
-          setError(`Error ${dbErr.code}: ${dbErr.message || 'Failed to save animal.'}`);
+          setError(err.message || 'Failed to save animal.');
         }
       } else {
         setError('Failed to save animal. Please try again.');
@@ -118,8 +110,9 @@ export function AnimalManager() {
 
   const handleDelete = async (id: string, tagId: string) => {
     if (!window.confirm(`Delete animal "${tagId}"? Any drug logs linked to this animal will be unlinked.`)) return;
-    const { error: err } = await supabase.from('animals').delete().eq('id', id);
-    if (err) {
+    try {
+      await apiRequest(`/api/animals/${id}`, 'DELETE');
+    } catch {
       alert('Failed to delete animal. Please try again.');
     }
     fetchAnimals();
