@@ -3,13 +3,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { calculateTimeAwareMRLStatus } from '../lib/calculations/mrlCalculator';
 import { DrugUsageLog } from '../types/index';
-import { LogOut, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
+import { LogOut, AlertTriangle, CheckCircle, TrendingUp, FileDown, Loader2 } from 'lucide-react';
 import { DrugUsageForm } from '../components/forms/DrugUsageForm';
 import { MRLStatusTable } from '../components/tables/MRLStatusTable';
 import { UsageChart } from '../components/common/UsageChart';
 import { RegulatoryResources } from '../components/common/RegulatoryResources';
 import { AnimalManager } from '../components/AnimalManager';
 import { ChatWidget } from '../components/chat/ChatWidget';
+import { WithdrawalCalendar } from '../components/calendar/WithdrawalCalendar';
+import { downloadSlaughterReport } from '../components/report/SlaughterReport';
 
 export function Dashboard() {
   const { user, signOut } = useAuth();
@@ -17,6 +19,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [editingLog, setEditingLog] = useState<DrugUsageLog | null>(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     safe: 0,
@@ -112,6 +115,15 @@ export function Dashboard() {
     setEditingLog(null);
   };
 
+  const handleDownloadReport = async () => {
+    setDownloadingPdf(true);
+    try {
+      await downloadSlaughterReport(logs, user?.email ?? 'Unknown');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const alertCount = stats.warning + stats.exceeded;
 
   return (
@@ -122,8 +134,19 @@ export function Dashboard() {
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-gray-900">Farm MRL Portal</h1>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <span className="text-sm text-gray-600">{user?.email}</span>
+              <button
+                onClick={handleDownloadReport}
+                disabled={downloadingPdf || logs.length === 0}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-md transition-colors"
+                title="Download slaughter readiness report as PDF"
+              >
+                {downloadingPdf
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <FileDown className="w-4 h-4" />}
+                {downloadingPdf ? 'Generating…' : 'Download Report'}
+              </button>
               <button
                 onClick={signOut}
                 className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
@@ -208,6 +231,10 @@ export function Dashboard() {
 
         <div className="mb-8">
           <UsageChart logs={logs} />
+        </div>
+
+        <div className="mb-8">
+          <WithdrawalCalendar logs={logs} />
         </div>
 
         {fetchError && (

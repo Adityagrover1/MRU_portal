@@ -14,6 +14,7 @@
     "ingest": "tsx --env-file .env.local server/scripts/ingestDocuments.ts"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
     "@supabase/supabase-js": "^2.57.4",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
