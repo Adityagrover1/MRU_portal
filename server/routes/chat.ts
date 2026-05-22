@@ -1,10 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { generateReply, ChatMessage } from '../lib/ragPipeline.js';
+import { generateReplyStream, ChatMessage } from '../lib/ragPipeline.js';
 
 const router = Router();
 
 router.post('/chat', async (req: Request, res: Response): Promise<void> => {
-  // Extract JWT from Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Missing or invalid Authorization header.' });
@@ -22,18 +21,25 @@ router.post('/chat', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
   try {
-    const reply = await generateReply(
+    await generateReplyStream(
       message.trim(),
       Array.isArray(conversationHistory) ? conversationHistory : [],
       userJwt,
+      (chunk) => res.write(`data: ${JSON.stringify({ chunk })}\n\n`),
     );
-    res.json({ reply });
+    res.write('data: [DONE]\n\n');
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error('Chat error:', message);
-    res.status(500).json({ error: message });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Chat error:', msg);
+    res.write(`data: ${JSON.stringify({ error: msg })}\n\n`);
   }
+
+  res.end();
 });
 
 export default router;

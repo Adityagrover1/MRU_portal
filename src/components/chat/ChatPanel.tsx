@@ -48,7 +48,7 @@ export function ChatPanel() {
   // Auto-scroll to latest message
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+  }, [messages]);
 
   const handleSend = () => {
     const text = input.trim();
@@ -112,7 +112,7 @@ export function ChatPanel() {
           <MessageBubble key={i} msg={msg} />
         ))}
 
-        {isLoading && <TypingIndicator />}
+        {isLoading && messages[messages.length - 1]?.role === 'user' && <TypingIndicator />}
 
         {error && (
           <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2 mt-2">

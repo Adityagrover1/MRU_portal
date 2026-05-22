@@ -59,7 +59,13 @@ interface DrugLog {
   animals: { tag_id: string; name: string | null } | null;
 }
 
+const logsCache = new Map<string, { logs: DrugLog[]; ts: number }>();
+const LOGS_TTL_MS = 60_000;
+
 async function fetchUserDrugLogs(userJwt: string): Promise<DrugLog[]> {
+  const cached = logsCache.get(userJwt);
+  if (cached && Date.now() - cached.ts < LOGS_TTL_MS) return cached.logs;
+
   const supabase = createUserSupabase(userJwt);
 
   const { data, error } = await supabase
@@ -82,7 +88,9 @@ async function fetchUserDrugLogs(userJwt: string): Promise<DrugLog[]> {
     return [];
   }
 
-  return (data as unknown as DrugLog[]) ?? [];
+  const logs = (data as unknown as DrugLog[]) ?? [];
+  logsCache.set(userJwt, { logs, ts: Date.now() });
+  return logs;
 }
 
 // ---------------------------------------------------------------------------
@@ -181,12 +189,15 @@ ${personalContext}`;
 // Main entry point
 // ---------------------------------------------------------------------------
 
-export async function generateReply(
+export async function generateReplyStream(
   message: string,
   conversationHistory: ChatMessage[],
   userJwt: string,
-): Promise<string> {
-  // 1. Embed the user's question
+  onChunk: (text: string) => void,
+): Promise<void> {
+  // Start drug logs fetch immediately — doesn't need the embedding
+  const logsPromise = fetchUserDrugLogs(userJwt);
+
   let queryEmbedding: number[];
   try {
     queryEmbedding = await embedText(message);
@@ -194,44 +205,38 @@ export async function generateReply(
     throw new Error(`Embedding failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 
-  // 2. Parallel: similarity search + fetch user's drug logs
   const [chunks, logs] = await Promise.all([
     searchDocuments(queryEmbedding),
-    fetchUserDrugLogs(userJwt),
+    logsPromise,
   ]);
 
-  // 3. Build the system prompt with regulatory + personal context
   const systemPrompt = buildSystemPrompt(chunks, logs);
 
-  // 4. Call the chat model with full conversation history
   const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
     { role: 'system', content: systemPrompt },
     ...conversationHistory.map(m => ({ role: m.role, content: m.content })),
     { role: 'user', content: message },
   ];
 
-  let completion;
+  let hasContent = false;
   try {
-    completion = await openai.chat.completions.create({
+    const stream = await openai.chat.completions.create({
       model: 'gpt-5-nano-2025-08-07',
       messages,
       max_completion_tokens: 4000,
+      stream: true,
     });
+
+    for await (const chunk of stream) {
+      const text = chunk.choices[0]?.delta?.content ?? '';
+      if (text) {
+        hasContent = true;
+        onChunk(text);
+      }
+    }
   } catch (err) {
     throw new Error(`Chat completion failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 
-  const choice = completion.choices[0];
-  console.log('[RAG] finish_reason:', choice?.finish_reason);
-  console.log('[RAG] content:', JSON.stringify(choice?.message?.content));
-
-  // Some newer models return content as null with refusal set, or return empty string
-  const content = choice?.message?.content ?? '';
-  if (content === '') {
-    const refusal = (choice?.message as any)?.refusal;
-    if (refusal) throw new Error(`Model refused: ${refusal}`);
-    throw new Error(`Model returned empty content (finish_reason: ${choice?.finish_reason})`);
-  }
-
-  return content;
+  if (!hasContent) throw new Error('Model returned empty content');
 }
